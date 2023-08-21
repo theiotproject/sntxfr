@@ -1,25 +1,50 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <errno.h> // error management
 #include <fcntl.h> // containst UNIX related constansts like O_RDWR
 #include <unistd.h> // read(), write(), open(), close()
-#include <termios.h>
+#include <termios.h> // terminal settings handler
 
 #define LF 0x0a
 #define CR 0x0d
 
-const char *path = "/dev/ttyUSB0"; 
-//const uint8_t code_uid[] = { 0x01, 0x0b, 0x13, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x7d, 0x50 };
+#define FRAME_LEN 11
 
-const uint8_t code_uid[] = { 0x01, 0x0b, 0x13, 0x00, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x37, 0x68 };
+const char *path = "/dev/ttyUSB0"; 
+
+typedef enum {
+  CARD_1,
+  CARD_2,
+  CARD_MAX
+} card_t;
+
+const uint8_t cards[CARD_MAX][FRAME_LEN] = {
+  { 0x01, 0x0b, 0x13, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x7d, 0x50 },
+  { 0x01, 0x0b, 0x13, 0x00, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x37, 0x68 },
+};
 
 int main(int argc, char *argv[])
 {
-  if (argc != 2)
-    printf("Set serial port as argument.");
+  if (argc != 3)
+    printf("Set serial port as argument and choose valid or invalid card [0/1].");
 
   path = argv[1];
+
+  uint8_t code_uid[FRAME_LEN];
+  uint8_t target = atoi(argv[2]);
+  switch(target)
+  {
+    case CARD_1:
+      memcpy(code_uid, cards[CARD_1], FRAME_LEN);
+      break;
+    case CARD_2:
+      memcpy(code_uid, cards[CARD_2], FRAME_LEN);
+      break;
+    default:
+      break;
+  }
 
   int serial_port = open(path, O_RDWR);
   if (serial_port < 0) {
