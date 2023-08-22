@@ -37,7 +37,6 @@ int main(int argc, char *argv[])
   switch(target)
   {
     case CARD_1:
-      memcpy(code_uid, cards[CARD_1], FRAME_LEN);
       break;
     case CARD_2:
       memcpy(code_uid, cards[CARD_2], FRAME_LEN);
